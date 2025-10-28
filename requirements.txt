@@ -1,0 +1,13 @@
+Flask==3.0.3
+requests==2.32.3
+numpy
+pickle-mixin==1.0.2
+python-dateutil==2.9.0
+Flask-Cors==4.0.1
+Werkzeug==3.0.3
+pandas==2.2.3
+lightgbm==4.5.0
+geocoder==1.38.1
+scikit-learn==1.5.2
+gunicorn==23.0.0
+
