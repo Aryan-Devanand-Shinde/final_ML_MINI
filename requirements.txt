@@ -10,4 +10,4 @@ lightgbm==4.5.0
 geocoder==1.38.1
 scikit-learn==1.5.2
 gunicorn==23.0.0
-
+reverse_geocoder
