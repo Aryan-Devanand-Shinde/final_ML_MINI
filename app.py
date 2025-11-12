@@ -177,10 +177,33 @@ def compute_features_from_forecast(df):
         soil_moist_avg = 0.15
         
     # Estimate NPK and pH (based on soil moisture/temp correlation)
-    N = round(max(0.0, soil_moist_avg * 200.0), 2)
-    P = round(max(0.0, soil_temp_avg * 4.0), 2)
-    K = round(max(0.0, soil_moist_avg * 250.0), 2)
-    ph = round(6.5 + (soil_temp_avg - 25.0) * 0.02, 2)
+    # N = round(max(0.0, soil_moist_avg * 200.0), 2)
+    # P = round(max(0.0, soil_temp_avg * 4.0), 2)
+    # K = round(max(0.0, soil_moist_avg * 250.0), 2)
+    # ph = round(6.5 + (soil_temp_avg - 25.0) * 0.02, 2)
+    
+    # --- 🌿 Nitrogen (N): depends on soil moisture (non-linear curve) ---
+    # Too dry → low N; moderate → high N; too wet → leaching reduces N
+    N = round(200 * soil_moist_avg * (1 - abs(soil_moist_avg - 0.25) * 2), 2)
+    N = max(N, 0.0)
+
+    # --- 🌾 Phosphorus (P): depends on temperature & pH balance ---
+    # Warm temp = better microbial activity; extreme pH = reduces availability
+    # Assume near-neutral baseline pH around 6.5
+    temp_factor_P = np.exp(-((temp_avg - 30)**2) / 100)   # bell curve around 30°C
+    ph_effect = 1 - abs(6.5 - 6.5) / 3                    # baseline neutral
+    P = round(40 * temp_factor_P * ph_effect, 2)
+    P = max(P, 0.0)
+
+    # --- 🧂 Potassium (K): depends on moderate moisture (bell-shaped relation) ---
+    # Moderate moisture → best K availability
+    K = round(250 * soil_moist_avg * (1 - abs(soil_moist_avg - 0.25) * 2), 2)
+    K = max(K, 0.0)
+
+    # --- ⚗️ pH: influenced by rainfall & humidity (acidification) ---
+    # More rainfall/humidity → more leaching → lower pH
+    ph = round(6.8 - 0.05 * (rainfall_avg / 5.0) - 0.02 * (humidity_avg / 100.0), 2)
+    ph = np.clip(ph, 5.0, 8.0)
 
     features = {
         "N": N,
